@@ -15,6 +15,8 @@ import lejos.robotics.navigation.MovePilot;
 public class Mover {
 
 private MovePilot pilot = null;
+private boolean foundWall = false;
+private boolean followRight;
     
     public void go()
     {
@@ -30,40 +32,98 @@ private MovePilot pilot = null;
     			setupPilot(brick);
 
         		pilot.forward();
+        		float[] sampleRight = new float[rightSensor.sampleSize()];
+				float[] sampleLeft = new float[rightSensor.sampleSize()];
+				rightSensor.fetchSample(sampleRight, 0);
+				leftSensor.fetchSample(sampleLeft, 0);
         		while (!Button.ESCAPE.isDown())
         		{
-        			float[] sampleRight = new float[rightSensor.sampleSize()];
-    				float[] sampleLeft = new float[rightSensor.sampleSize()];
-    				rightSensor.fetchSample(sampleRight, 0);
-    				leftSensor.fetchSample(sampleLeft, 0);
-    				System.out.println("We should get here");
-    				if(sampleRight[0] == 1 && sampleLeft[0] == 1)
-    				{
-    					pilot.stop();
-    					pilot.travel(-5);
-    					pilot.rotate(-40);
-    					pilot.forward();
-    				}
-    				else if (sampleRight[0] == 1)
+        			findWallToFollow(sampleRight, sampleLeft);
+        			if(followRight)
         			{
-    					pilot.stop();
-    					pilot.travel(-5);
-    					pilot.rotate(-20);
-    					pilot.forward();
+        				followRight(sampleRight, sampleLeft);
         			}
-    				else if (sampleLeft[0] == 1)
-    				{
-    					pilot.stop();
-    					pilot.travel(-5);
-    					pilot.rotate(-20);
-    					pilot.forward();
-    				}
+        			else
+        			{
+        				followLeft(sampleRight, sampleLeft);
+        			}
+    				
         		}
         		rightSensor.close();
         		leftSensor.close();
     			
     		}
     	}
+    }
+    
+    private void followRight(float[] sampleRight, float[] sampleLeft)
+    {
+    	if(sampleRight[0] == 1 && sampleLeft[0] == 1)
+		{
+			pilot.stop();
+			pilot.travel(-5);
+			pilot.rotate(-40);
+			pilot.forward();
+		}
+		else if (sampleRight[0] == 1)
+		{
+			pilot.stop();
+			pilot.travel(-5);
+			pilot.rotate(-20);
+			pilot.forward();
+		}
+		else if (sampleLeft[0] == 1)
+		{
+			pilot.stop();
+			pilot.travel(-5);
+			pilot.rotate(-20);
+			pilot.forward();
+		}
+    }
+    
+    private void followLeft(float[] sampleRight, float[] sampleLeft)
+    {
+    	if(sampleRight[0] == 1 && sampleLeft[0] == 1)
+		{
+			pilot.stop();
+			pilot.travel(-5);
+			pilot.rotate(40);
+			pilot.forward();
+		}
+		else if (sampleLeft[0] == 1)
+		{
+			pilot.stop();
+			pilot.travel(-5);
+			pilot.rotate(-20);
+			pilot.forward();
+		}
+		else if (sampleRight[0] == 1)
+		{
+			pilot.stop();
+			pilot.travel(-5);
+			pilot.rotate(-20);
+			pilot.forward();
+		}
+    }
+    
+    private void findWallToFollow(float[] sampleRight, float[] sampleLeft)
+    {
+    	while(!foundWall)
+    	{
+    		if(sampleRight[0] == 1 && sampleLeft[0] == 1)
+    		{
+    			followRight = true;
+    		}
+    		if(sampleRight[0] == 1)
+    		{
+    			followRight = false;
+       		}
+    		if(sampleLeft[0] == 1)
+    		{
+    			followRight = true;
+    		}
+    	}
+    	
     }
 
     private void setupPilot(EV3 brick)
