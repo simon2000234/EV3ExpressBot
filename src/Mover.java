@@ -113,14 +113,17 @@ private boolean followRight;
     		if(sampleRight[0] == 1 && sampleLeft[0] == 1)
     		{
     			followRight = true;
+    			foundWall=true;
     		}
     		if(sampleRight[0] == 1)
     		{
     			followRight = false;
+    			foundWall = true;
        		}
     		if(sampleLeft[0] == 1)
     		{
     			followRight = true;
+    			foundWall = true;
     		}
     	}
     	
